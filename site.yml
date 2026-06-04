@@ -1,0 +1,14 @@
+---
+- name: Provision all nodes
+  hosts: common
+  become: true
+  roles:
+    - common
+    - firewall
+
+- name: Setup web nodes
+  hosts: web
+  become: true
+  roles:
+    - nginx
+    - app

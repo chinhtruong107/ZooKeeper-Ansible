@@ -1,0 +1,31 @@
+---
+- name: Install python3
+  apt:
+    name: python3
+    state: present
+
+- name: Copy app file
+  copy:
+    src: /tmp/app.py
+    dest: /opt/app.py
+    mode: '0755'
+
+- name: Copy app config
+  template:
+    src: app.env.j2
+    dest: /opt/app.env
+    mode: '0644'
+
+- name: Kill existing app
+  shell: pkill -f "python3 /opt/app.py"
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+
+- name: Start app
+  shell: nohup python3 /opt/app.py > /var/log/app.log 2>&1 < /dev/null &
+  environment:
+    APP_ENV: "{{ app_env | default('production') }}"
+    APP_PORT: "{{ app_port | default('8000') }}"
+  args:
+    executable: /bin/bash
