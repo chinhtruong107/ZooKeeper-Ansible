@@ -78,9 +78,9 @@
 
 - name: Test ghi du lieu
   shell: >
+    echo "create /ha_test 'ok'" |
     /opt/zookeeper/current/bin/zkCli.sh
     -server {{ zookeeper_nodes[0].ip }}:{{ zookeeper_client_port }},{{ zookeeper_nodes[1].ip }}:{{ zookeeper_client_port }},{{ zookeeper_nodes[2].ip }}:{{ zookeeper_client_port }}
-    <<< "create /ha_test 'ok'"
   args:
     executable: /bin/bash
   register: zkcli_result
@@ -90,9 +90,9 @@
 
 - name: Test doc du lieu
   shell: >
+    echo "get /ha_test" |
     /opt/zookeeper/current/bin/zkCli.sh
     -server {{ zookeeper_nodes[0].ip }}:{{ zookeeper_client_port }},{{ zookeeper_nodes[1].ip }}:{{ zookeeper_client_port }},{{ zookeeper_nodes[2].ip }}:{{ zookeeper_client_port }}
-    <<< "get /ha_test"
   args:
     executable: /bin/bash
   register: get_result
