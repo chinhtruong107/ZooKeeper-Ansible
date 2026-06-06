@@ -85,10 +85,7 @@
     executable: /bin/bash
   register: zkcli_result
   changed_when: false
-
-- name: Hien thi ket qua
-  debug:
-    msg: "{{ zkcli_result.stdout }}"
+  run_once: true
 
 - name: Test doc du lieu
   shell: >
@@ -99,10 +96,12 @@
     executable: /bin/bash
   register: get_result
   changed_when: false
+  run_once: true
 
 - name: Hien thi ket qua
   debug:
     msg: "{{ get_result.stdout }}"
+  run_once: true
 
 - name: Tang so luong file descriptor
   lineinfile:
