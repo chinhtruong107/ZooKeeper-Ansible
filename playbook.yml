@@ -1,6 +1,6 @@
 ---
 - name: Provision all nodes
-  hosts: common
+  hosts: zookeeper
   become: true
   roles:
     - common
