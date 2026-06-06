@@ -32,7 +32,7 @@
         msg: "{{ status_result.stdout }}"
 
 - name: Verify cluster
-  hosts: verify
+  hosts: zookeeper
   become: true
   roles:
     - verify
