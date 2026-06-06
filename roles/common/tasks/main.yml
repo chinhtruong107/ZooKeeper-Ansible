@@ -64,11 +64,13 @@
   loop: "{{ groups['zookeeper'] }}"
 
 - name: Kiem tra hosts
-  command: getent hosts {{item}}
+  command: getent hosts {{ item }}
   register: host_result
   loop: "{{ groups['zookeeper'] }}"
+  changed_when: false
 
 - name: Hien thi ket qua hosts
   debug:
-    msg: "{{ host_result.stdout }}"
+    msg: "{{ item.stdout }}"
+  loop: "{{ host_result.results }}"
 
