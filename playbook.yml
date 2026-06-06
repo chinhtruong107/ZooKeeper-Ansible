@@ -4,7 +4,6 @@
   become: true
   roles:
     - common
-    - firewall
 
 - name: Cai dat ZooKeeper
   hosts: zookeeper
