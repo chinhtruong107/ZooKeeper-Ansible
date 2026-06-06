@@ -15,7 +15,7 @@
 
 - name: Dat hostname
   hostname:
-    name: {{ inventory_hostname }}
+    name: "{{ inventory_hostname }}"
 
 - name: Install Java
   apt:
