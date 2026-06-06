@@ -9,10 +9,66 @@
       - curl
       - vim
       - net-tools
+      - sysstat
+      - fio
     state: present
 
-- name: Create deploy user
-  user:
-    name: deploy
+- name: Dat hostname
+  hostname:
+    name: {{ inventory_hostname }}
+
+- name: Install Java
+  apt:
+    name:
+      - openjdk-17-jre-headless
+      - wget
+      - tar
+      - netcat-openbsd
     state: present
-    shell: /bin/bash
+    update_cache: yes
+
+- name: Install Chrony
+  apt:
+    name:
+      - chrony
+    state: present
+    update_cache: yes
+
+- name: Enable and start Chrony
+  systemd:
+    name: chrony
+    enabled: yes
+    state: started
+
+- name: Kiem tra chrony
+  command: chronyc tracking
+  register: chrony_result
+
+- name: Hien thi ket qua chrony
+  debug:
+    msg: "{{ chrony_result.stdout }}"
+
+- name: Kiem tra source NTP
+  command: chronyc sources
+  register: sources_result
+
+- name: Hien thi ket qua chrony
+  debug:
+    msg: "{{ sources_result.stdout }}"
+
+- name: Them host
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ hostvars[item]['ansible_host'] }} {{ item }}"
+    state: present
+  loop: "{{ groups['zookeeper'] }}"
+
+- name: Kiem tra hosts
+  command: getent hosts {{item}}
+  register: host_result
+  loop: "{{ groups['zookeeper'] }}"
+
+- name: Hien thi ket qua hosts
+  debug:
+    msg: "{{ host_result.stdout }}"
+

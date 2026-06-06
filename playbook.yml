@@ -1,0 +1,39 @@
+---
+- name: Provision all nodes
+  hosts: common
+  become: true
+  roles:
+    - common
+    - firewall
+
+- name: Cai dat ZooKeeper
+  hosts: zookeeper
+  become: true
+  roles:
+    - zookeeper
+
+- name: Start ZooKeeper lan luot
+  hosts: zookeeper
+  become: true
+  serial: 1
+  tasks:
+    - name: Start ZooKeeper
+      systemd:
+        name: zookeeper
+        state: started
+        enabled: yes
+
+    - name: Status ZooKeeper
+      shell: systemctl status zookeeper
+      register: status_result
+      changed_when: false
+
+    - name: Hien thi ket qua
+      debug:
+        msg: "{{ status_result.stdout }}"
+
+- name: Verify cluster
+  hosts: verify
+  become: true
+  roles:
+    - verify

@@ -4,19 +4,37 @@
     name: ufw
     state: present
 
-- name: Allow SSH
+- name: Allow Zookeeper
   ufw:
     rule: allow
-    port: '22'
+    port: '{{ zookeeper_client_port }}'
     proto: tcp
 
-- name: Allow HTTP
+- name: Allow Zookeeper
   ufw:
     rule: allow
-    port: '80'
+    port: '{{ zookeeper_quorum_port }}'
+    proto: tcp
+
+- name: Allow Zookeeper
+  ufw:
+    rule: allow
+    port: '{{ zookeeper_election_port }}'
     proto: tcp
 
 - name: Enable firewall
   ufw:
     state: enabled
     default: deny
+
+- name: Reload ufw
+  ufw:
+    state: reloaded
+
+- name: Status ufw
+  command: ufw status
+  register: ufw_status
+
+- name: Hien thi ket qua ufw
+  debug:
+    msg: "{{ ufw_status.stdout }}"

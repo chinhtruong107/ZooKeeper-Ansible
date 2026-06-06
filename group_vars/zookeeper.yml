@@ -1,0 +1,27 @@
+ansible_user: ansible
+ansible_ssh_private_key_file: "/.ssh/zookeeper-keypair.pem"
+
+zookeeper_version: "3.9.5"
+
+zookeeper_install_dir: "/opt/zookeeper"
+zookeeper_config_dir: "/etc/zookeeper"
+zookeeper_data_dir: "/data/zookeeper/data"
+zookeeper_datalog_dir: "/data/zookeeper/log"
+zookeeper_log_dir: "/var/log/zookeeper"
+
+zookeeper_heap: "256M"
+
+zookeeper_client_port: 2181
+zookeeper_quorum_port: 2888
+zookeeper_election_port: 3888
+
+zookeeper_nodes:
+  - id: 1
+    host: zk1
+    ip: "{{ hostvars['zk1']['ansible_host'] }}"
+  - id: 2
+    host: zk2
+    ip: "{{ hostvars['zk2']['ansible_host'] }}"
+  - id: 3
+    host: zk3
+    ip: "{{ hostvars['zk3']['ansible_host'] }}"

@@ -1,0 +1,18 @@
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir={{ zookeeper_data_dir }}
+dataLogDir={{ zookeeper_datalog_dir }}
+clientPort={{ zookeeper_client_port }}
+maxClientCnxns=200
+autopurge.snapRetainCount=10
+autopurge.purgeInterval=24
+4lw.commands.whitelist=ruok,mntr,conf,srvr,stat
+admin.enableServer=false
+quorumListenOnAllIPs=true
+globalOutstandingLimit=1000
+preAllocSize=65536
+snapCount=100000
+{% for node in zookeeper_nodes %}
+server.{{ node.id }}={{ node.host }}:{{ zookeeper_quorum_port }}:{{ zookeeper_election_port }}
+{% endfor %}

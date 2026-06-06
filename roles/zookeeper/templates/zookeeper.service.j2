@@ -1,0 +1,20 @@
+[Unit]
+Description=Apache ZooKeeper
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=zookeeper
+Group=zookeeper
+EnvironmentFile=-{{ zookeeper_config_dir }}/zookeeper-env.sh
+ExecStart={{ zookeeper_install_dir }}/current/bin/zkServer.sh start {{ zookeeper_config_dir }}/zoo.cfg
+ExecStop={{ zookeeper_install_dir }}/current/bin/zkServer.sh stop {{ zookeeper_config_dir }}/zoo.cfg
+ExecReload={{ zookeeper_install_dir }}/current/bin/zkServer.sh restart {{ zookeeper_config_dir }}/zoo.cfg
+PIDFile={{ zookeeper_data_dir }}/zookeeper_server.pid
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,157 @@
+---
+- name: Kiem tra port ZooKeeper
+  shell: ss -lntp | egrep '{{ zookeeper_client_port }}|{{ zookeeper_quorum_port }}|{{ zookeeper_election_port }}'
+  register: port_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ port_result.stdout }}"
+
+- name: Kiem tra port ZooKeeper
+  shell: ss -antp | egrep '{{ zookeeper_quorum_port }}|{{ zookeeper_election_port }}'
+  register: port_result2
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ port_result2.stdout }}"
+
+- name: Bat logrotate
+  template:
+    src: logrotate-zookeeper.j2
+    dest: /etc/logrotate.d/zookeeper
+
+- name: Kiem tra logrotate
+  shell: cat /etc/logrotate.d/zookeeper
+  register: logrotate_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ logrotate_result.stdout }}"
+
+- name: Check Zookeeper health
+  shell: echo ruok | nc 127.0.0.1 2181
+  register: ruok_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ ruok_result.stdout }}"
+
+- name: Verify ensemble size
+  shell: echo mntr | nc 127.0.0.1 2181 | grep zk_server_state
+  register: ensemble_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ ensemble_result.stdout }}"
+
+- name: Check metric text
+  shell: echo mntr | nc 127.0.0.1 2181
+  register: mntr_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ mntr_result.stdout }}"
+
+- name: Check process
+  shell: ps -ef | grep QuorumPeerMain
+  register: process_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ process_result.stdout }}"
+
+- name: Check log
+  shell: journalctl -u zookeeper -n 50 --no-pager
+  register: log_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ log_result.stdout }}"
+
+- name: Test ghi du lieu
+  shell: >
+    /opt/zookeeper/current/bin/zkCli.sh
+    -server {{ zookeeper_nodes[0].ip }}:{{ zookeeper_client_port }},{{ zookeeper_nodes[1].ip }}:{{ zookeeper_client_port }},{{ zookeeper_nodes[2].ip }}:{{ zookeeper_client_port }}
+    <<< "create /ha_test 'ok'"
+  register: zkcli_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ zkcli_result.stdout }}"
+
+- name: Test doc du lieu
+  shell: >
+    /opt/zookeeper/current/bin/zkCli.sh
+    -server {{ zookeeper_nodes[0].ip }}:{{ zookeeper_client_port }},{{ zookeeper_nodes[1].ip }}:{{ zookeeper_client_port }},{{ zookeeper_nodes[2].ip }}:{{ zookeeper_client_port }}
+    <<< "get /ha_test"
+  register: get_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ get_result.stdout }}"
+
+- name: Tang so luong file descriptor
+  lineinfile:
+    path: /etc/security/limits.conf
+    line: "{{ item }}"
+    state: present
+  loop:
+    - "zookeeper soft nofile 65535"
+    - "zookeeper hard nofile 65535"
+
+- name: sysctl
+  template:
+    src: 99-zookeeper.conf.j2
+    dest: "/etc/sysctl.d/99-zookeeper.conf"
+  notify: Reload sysctl
+
+- name: Reload sysctl
+  command: sysctl --system
+  changed_when: false
+
+- name: Tat swap
+  command: swapoff -a
+  changed_when: false
+
+- name: Kiem tra swap
+  command: free -h
+  register: swap_result
+  changed_when: false
+
+- name: Hien thi ket qua
+  debug:
+    msg: "{{ swap_result.stdout }}"
+
+- name: Test disk latency bang fio
+  shell: >
+    fio --name=zk-log-test
+    --filename=/data/zookeeper/testfile
+    --size=1G
+    --bs=4k
+    --rw=write
+    --ioengine=sync
+    --fdatasync=1
+    --runtime=60
+    --time_based
+    --group_reporting
+  register: fio_result
+  changed_when: false
+
+- name: Hien thi ket qua fio
+  debug:
+    msg: "{{ fio_result.stdout }}"
+
+- name: Xoa file test
+  file:
+    path: /data/zookeeper/testfile
+    state: absent
