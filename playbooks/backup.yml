@@ -2,5 +2,7 @@
 - name: Setup backup
   hosts: zookeeper
   become: true
+  vars_files:
+    - ../group_vars/zookeeper.yml
   roles:
     - backup
