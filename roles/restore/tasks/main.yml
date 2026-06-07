@@ -1,0 +1,93 @@
+---
+- name: Stop zookeeper
+  service:
+    name: zookeeper
+    state: stopped
+  when: 
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Safety backup truoc khi restore
+  shell: |
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    mkdir -p {{ backup_path }}/safety_${TIMESTAMP}
+    cp -r {{ zookeeper_data_dir }} {{ backup_path }}/safety_${TIMESTAMP}/data
+    cp -r {{ zookeeper_datalog_dir }} {{ backup_path }}/safety_${TIMESTAMP}/log
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Xoa data cu
+  shell: |
+    rm -rf {{ zookeeper_data_dir }}/*
+    rm -rf {{ zookeeper_datalog_dir }}/*
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Giai nen backup
+  shell: |
+    tar -xzf {{ backup_path }}/zookeeper_{{ restore_backup }}.tar.gz -C /tmp/
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Restore data
+  shell: |
+    cp -r /tmp/{{ restore_backup }}/data/* {{ zookeeper_data_dir }}/
+    cp -r /tmp/{{ restore_backup }}/log/* {{ zookeeper_datalog_dir }}/
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Fix permission
+  file:
+    path: "{{ item }}"
+    owner: zookeeper
+    group: zookeeper
+    recurse: yes
+  loop:
+    - "{{ zookeeper_data_dir }}"
+    - "{{ zookeeper_datalog_dir }}"
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Start zookeeper
+  service:
+    name: zookeeper
+    state: started
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Check Zookeeper health
+  shell: echo ruok | nc 127.0.0.1 2181
+  register: ruok_result
+  changed_when: false
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Hien thi ket qua ruok
+  debug:
+    msg: "{{ ruok_result.stdout }}"
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Check Zookeeper leader or follower
+  shell: echo srvr | nc 127.0.0.1 2181 | grep Mode
+  register: srvr_result
+  changed_when: false
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
+- name: Hien thi ket qua srvr
+  debug:
+    msg: "{{ srvr_result.stdout }}"
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+

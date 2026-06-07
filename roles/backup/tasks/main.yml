@@ -1,0 +1,26 @@
+---
+- name: Tao thu muc backup
+  file:
+    path: "{{ backup_path }}"
+    state: directory
+    owner: zookeeper
+    group: zookeeper
+    mode: "0750"
+  when: backup_enabled
+
+- name: Tao script backup
+  template:
+    src: zookeeper-backup.sh.j2
+    dest: /usr/local/bin/zookeeper-backup.sh
+    owner: zookeeper
+    group: zookeeper
+    mode: "0750"
+  when: backup_enabled
+
+- name: Tao cron job backup
+  cron:
+    name: "ZooKeeper backup"
+    user: zookeeper
+    job: "/usr/local/bin/zookeeper-backup.sh"
+    special_time: "{{ backup_frequency }}"
+  when: backup_enabled

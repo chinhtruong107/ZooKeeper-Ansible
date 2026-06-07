@@ -25,3 +25,14 @@ zookeeper_nodes:
   - id: 3
     host: zk3
     ip: "{{ hostvars['zk3']['ansible_host'] }}"
+
+backup_enabled: true
+backup_frequency: "daily"
+backup_retention_days: 7
+backup_path: "/backup/zookeeper"
+backup_type: "full"
+
+restore_enabled: true
+restore_type: "full"
+restore_target: "zk1"
+restore_backup: "20260601_120000"

@@ -1,0 +1,6 @@
+---
+- name: Setup backup
+  hosts: zookeeper
+  become: true
+  roles:
+    - backup

@@ -1,0 +1,7 @@
+---
+- name: Restore ZooKeeper
+  hosts: zookeeper
+  become: true
+  serial: 1
+  roles:
+    - restore
