@@ -27,7 +27,7 @@
 
 - name: Giai nen backup
   shell: |
-    tar -xzf {{ backup_path }}/zookeeper_{{ restore_backup }}.tar.gz -C /tmp/
+    tar -xzf {{ backup_path }}/zookeeper_{{ backup_type }}_{{ restore_backup }}.tar.gz -C /tmp/
   when:
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target

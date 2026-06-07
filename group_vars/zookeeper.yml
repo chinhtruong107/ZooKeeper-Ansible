@@ -35,4 +35,4 @@ backup_type: "full"
 restore_enabled: true
 restore_type: "full"
 restore_target: "zk1"
-restore_backup: "20260607_020000"
+restore_backup: "20260607_095146"
