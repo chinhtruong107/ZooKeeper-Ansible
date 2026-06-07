@@ -2,12 +2,16 @@
 - name: Provision all nodes
   hosts: zookeeper
   become: true
+  vars_files:
+    - ../group_vars/zookeeper.yml
   roles:
     - common
 
 - name: Cai dat ZooKeeper
   hosts: zookeeper
   become: true
+  vars_files:
+    - ../group_vars/zookeeper.yml
   roles:
     - zookeeper
 
@@ -15,6 +19,8 @@
   hosts: zookeeper
   become: true
   serial: 1
+  vars_files:
+    - ../group_vars/zookeeper.yml
   tasks:
     - name: Start ZooKeeper
       systemd:
@@ -34,5 +40,7 @@
 - name: Verify cluster
   hosts: zookeeper
   become: true
+  vars_files:
+    - ../group_vars/zookeeper.yml
   roles:
     - verify
