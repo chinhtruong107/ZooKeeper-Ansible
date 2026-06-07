@@ -4,31 +4,26 @@ BACKUP_DIR="{{ backup_path }}/${TIMESTAMP}"
 mkdir -p ${BACKUP_DIR}
 
 {% if backup_type == 'full' %}
-# Full backup
 cp -r {{ zookeeper_data_dir }} ${BACKUP_DIR}/data
 cp -r {{ zookeeper_datalog_dir }} ${BACKUP_DIR}/log
-
 {% elif backup_type == 'incremental' %}
-# Incremental — chỉ copy txn log mới
 LAST_BACKUP=$(ls -t {{ backup_path }}/*.tar.gz 2>/dev/null | head -1)
 if [ -z "${LAST_BACKUP}" ]; then
-    # Chưa có backup nào → full backup
     cp -r {{ zookeeper_data_dir }} ${BACKUP_DIR}/data
     cp -r {{ zookeeper_datalog_dir }} ${BACKUP_DIR}/log
 else
-    # Chỉ copy txn log mới hơn lần backup trước
     mkdir -p ${BACKUP_DIR}/log
     find {{ zookeeper_datalog_dir }} -newer ${LAST_BACKUP} -type f \
         -exec cp {} ${BACKUP_DIR}/log/ \;
 fi
 {% endif %}
 
-# Nén lại
 tar -czf {{ backup_path }}/zookeeper_{{ backup_type }}_${TIMESTAMP}.tar.gz \
     -C {{ backup_path }} ${TIMESTAMP}
 
-# Xóa thư mục tạm
 rm -rf ${BACKUP_DIR}
 
-# Xóa file cũ
+# Fix permission
+chown zookeeper:zookeeper {{ backup_path }}/zookeeper_{{ backup_type }}_${TIMESTAMP}.tar.gz
+
 find {{ backup_path }} -name "*.tar.gz" -mtime +{{ backup_retention_days }} -delete
