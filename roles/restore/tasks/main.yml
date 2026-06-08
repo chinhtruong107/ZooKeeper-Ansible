@@ -1,4 +1,21 @@
 ---
+- name: Safety validation before restore (STRICT CHECK)
+  assert:
+    that:
+      - restore_enabled | bool
+      - restore_type is defined
+      - restore_type == 'full'
+      - restore_backup is defined
+      - backup_path is defined
+      - zookeeper_data_dir is defined
+      - zookeeper_datalog_dir is defined
+      - inventory_hostname == restore_target
+      - zookeeper_data_dir != '/'
+      - zookeeper_data_dir != ''
+      - zookeeper_datalog_dir != '/'
+      - "'zookeeper' in zookeeper_data_dir"
+    fail_msg: "ABORT: Unsafe restore conditions detected"
+
 - name: Stop zookeeper
   service:
     name: zookeeper
@@ -69,7 +86,7 @@
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target
 
-- name: Hien thi ket qua ruok
+- name: Show ruok result
   debug:
     msg: "{{ ruok_result.stdout }}"
   when:
@@ -84,10 +101,9 @@
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target
 
-- name: Hien thi ket qua srvr
+- name: Show srvr result
   debug:
     msg: "{{ srvr_result.stdout }}"
   when:
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target
-
