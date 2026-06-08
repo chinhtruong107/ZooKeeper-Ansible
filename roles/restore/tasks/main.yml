@@ -7,7 +7,7 @@
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target
 
-- name: Safety backup truoc khi restore
+- name: Safety backup before restore
   shell: |
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
     mkdir -p {{ backup_path }}/safety_${TIMESTAMP}
@@ -17,7 +17,7 @@
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target
 
-- name: Xoa data cu
+- name: Delete old data
   shell: |
     rm -rf {{ zookeeper_data_dir }}/*
     rm -rf {{ zookeeper_datalog_dir }}/*
@@ -25,7 +25,7 @@
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target
 
-- name: Giai nen backup
+- name: Extract backup
   shell: |
     tar -xzf {{ backup_path }}/zookeeper_{{ backup_type }}_{{ restore_backup }}.tar.gz -C /tmp/
   when:
@@ -69,7 +69,7 @@
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target
 
-- name: Hien thi ket qua ruok
+- name: Show result ruok
   debug:
     msg: "{{ ruok_result.stdout }}"
   when:
@@ -84,7 +84,7 @@
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target
 
-- name: Hien thi ket qua srvr
+- name: Show result srvr
   debug:
     msg: "{{ srvr_result.stdout }}"
   when:

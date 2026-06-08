@@ -35,6 +35,6 @@
   command: ufw status
   register: ufw_status
 
-- name: Hien thi ket qua ufw
+- name: Show result
   debug:
     msg: "{{ ufw_status.stdout }}"

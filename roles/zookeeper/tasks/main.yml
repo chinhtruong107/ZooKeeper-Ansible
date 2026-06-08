@@ -1,10 +1,10 @@
 ---
-- name: Tao group zookeeper
+- name: Create group zookeeper
   group:
     name: zookeeper
     system: yes
 
-- name: Tao user zookeeper
+- name: Create user zookeeper
   user:
     name: zookeeper
     group: zookeeper
@@ -13,7 +13,7 @@
     system: yes
     create_home: no
 
-- name: Tao cac thu muc
+- name: Create directory
   file:
     path: "{{ item.path }}"
     state: directory
@@ -24,36 +24,36 @@
     - { path: "{{ zookeeper_install_dir }}", mode: "0755" }
     - { path: "{{ zookeeper_config_dir }}", mode: "0750" }
     - { path: "{{ zookeeper_data_dir }}", mode: "0750" }
-    - { path: "{{ zookeeper_data_dir }}", mode: "0750" }
     - { path: "{{ zookeeper_datalog_dir }}", mode: "0750" }
     - { path: "{{ zookeeper_log_dir }}", mode: "0750" }
 
-- name: Kiem tra thu muc
+- name: Check directory
   command: "ls -ld {{ item }}"
   register: result
   loop:
     - "{{ zookeeper_data_dir }}"
     - "{{ zookeeper_datalog_dir }}"
 
-- name: Hien thi ket qua
+- name: Show result
   debug:
     msg: "{{ item.stdout }}"
   loop: "{{ result.results }}"
 
-- name: Tai ZooKeeper
+- name: Download ZooKeeper
   get_url:
     url: "https://downloads.apache.org/zookeeper/zookeeper-{{ zookeeper_version }}/apache-zookeeper-{{ zookeeper_version }}-bin.tar.gz"
     dest: "/tmp/apache-zookeeper-{{ zookeeper_version }}-bin.tar.gz"
 
-- name: Giai nen ZooKeeper
+- name: Extract ZooKeeper
   unarchive:
     src: "/tmp/apache-zookeeper-{{ zookeeper_version }}-bin.tar.gz"
     dest: /opt/
     remote_src: yes
     owner: zookeeper
     group: zookeeper
+    creates: "/opt/apache-zookeeper-{{ zookeeper_version }}-bin"
 
-- name: Tao symlink current
+- name: Create symlink current
   file:
     src: "/opt/apache-zookeeper-{{ zookeeper_version }}-bin"
     dest: "/opt/zookeeper/current"
@@ -61,7 +61,7 @@
     owner: zookeeper
     group: zookeeper
 
-- name: Tao file zoo.cfg
+- name: Create file zoo.cfg
   template:
     src: zoo.cfg.j2
     dest: "{{ zookeeper_config_dir }}/zoo.cfg"
@@ -70,15 +70,15 @@
     mode: "0640"
   notify: Restart zookeeper
 
-- name: Tao file myid
+- name: Create myid file
   copy:
-    content: "{{ zookeeper_nodes | selectattr('host', 'equalto', inventory_hostname) | map(attribute='id') | first }}"
+    content: "{{ groups['zookeeper'].index(inventory_hostname) + 1 }}"
     dest: "{{ zookeeper_data_dir }}/myid"
     owner: zookeeper
     group: zookeeper
     mode: "0644"
 
-- name: Tao file zookeeper-env.sh
+- name: Create file zookeeper-env.sh
   template:
     src: zookeeper-env.sh.j2
     dest: "{{ zookeeper_config_dir }}/zookeeper-env.sh"
@@ -87,15 +87,15 @@
     mode: "0640"
   notify: Restart zookeeper
 
-- name: Kiem tra file zookeeper-env.sh
+- name: Check zookeeper-env.sh file
   command: cat {{ zookeeper_config_dir }}/zookeeper-env.sh
   register: env_result
 
-- name: Hien thi ket qua
+- name: Show result
   debug:
     msg: "{{ env_result.stdout }}"
 
-- name: Tao file service systemd
+- name: Create systemd service file
   template:
     src: zookeeper.service.j2
     dest: "/etc/systemd/system/zookeeper.service"
@@ -104,17 +104,17 @@
   systemd: 
     daemon_reload: yes
 
-- name: Khoi dong zookeeper
+- name: Restart zookeeper
   systemd: 
     name: zookeeper
     state: started
     enabled: yes
 
-- name: Kiem tra systemd
+- name: Check systemd
   shell: systemctl cat zookeeper
   register: systemd_result
 
-- name: Hien thi ket qua
+- name: Show result
   debug:
     msg: "{{ systemd_result.stdout }}"
 

@@ -13,7 +13,7 @@
       - fio
     state: present
 
-- name: Dat hostname
+- name: Set hostname
   hostname:
     name: "{{ inventory_hostname }}"
 
@@ -40,36 +40,36 @@
     enabled: yes
     state: started
 
-- name: Kiem tra chrony
+- name: Check chrony
   command: chronyc tracking
   register: chrony_result
 
-- name: Hien thi ket qua chrony
+- name: Show result
   debug:
     msg: "{{ chrony_result.stdout }}"
 
-- name: Kiem tra source NTP
+- name: Check NTP source
   command: chronyc sources
   register: sources_result
 
-- name: Hien thi ket qua chrony
+- name: Show result
   debug:
     msg: "{{ sources_result.stdout }}"
 
-- name: Them host
+- name: Add host
   lineinfile:
     path: /etc/hosts
     line: "{{ hostvars[item]['ansible_host'] }} {{ item }}"
     state: present
   loop: "{{ groups['zookeeper'] }}"
 
-- name: Kiem tra hosts
+- name: Check hosts
   command: getent hosts {{ item }}
   register: host_result
   loop: "{{ groups['zookeeper'] }}"
   changed_when: false
 
-- name: Hien thi ket qua hosts
+- name: Show result
   debug:
     msg: "{{ item.stdout }}"
   loop: "{{ host_result.results }}"

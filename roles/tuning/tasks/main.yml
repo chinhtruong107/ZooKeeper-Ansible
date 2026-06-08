@@ -1,0 +1,24 @@
+---
+- name: Set file descriptor limits
+  lineinfile:
+    path: /etc/security/limits.conf
+    line: "{{ item }}"
+    state: present
+  loop:
+    - "zookeeper soft nofile 65535"
+    - "zookeeper hard nofile 65535"
+
+- name: Configure sysctl
+  template:
+    src: 99-zookeeper.conf.j2
+    dest: /etc/sysctl.d/99-zookeeper.conf
+  notify: Reload sysctl
+
+- name: Disable swap
+  command: swapoff -a
+  changed_when: false
+
+- name: Configure logrotate
+  template:
+    src: logrotate-zookeeper.j2
+    dest: /etc/logrotate.d/zookeeper

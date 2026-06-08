@@ -15,17 +15,6 @@ zookeeper_client_port: 2181
 zookeeper_quorum_port: 2888
 zookeeper_election_port: 3888
 
-zookeeper_nodes:
-  - id: 1
-    host: zk1
-    ip: "{{ hostvars['zk1']['ansible_host'] }}"
-  - id: 2
-    host: zk2
-    ip: "{{ hostvars['zk2']['ansible_host'] }}"
-  - id: 3
-    host: zk3
-    ip: "{{ hostvars['zk3']['ansible_host'] }}"
-
 backup_enabled: true
 backup_frequency: "daily"
 backup_retention_days: 7

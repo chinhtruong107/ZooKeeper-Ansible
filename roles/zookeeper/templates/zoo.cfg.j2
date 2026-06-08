@@ -13,6 +13,6 @@ quorumListenOnAllIPs=true
 globalOutstandingLimit=1000
 preAllocSize=65536
 snapCount=100000
-{% for node in zookeeper_nodes %}
-server.{{ node.id }}={{ node.host }}:{{ zookeeper_quorum_port }}:{{ zookeeper_election_port }}
+{% for host in groups['zookeeper'] %}
+server.{{ loop.index }}={{ host }}:{{ zookeeper_quorum_port }}:{{ zookeeper_election_port }}
 {% endfor %}
