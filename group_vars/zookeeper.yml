@@ -25,4 +25,3 @@ restore_enabled: true
 restore_type: "full"
 restore_target: "zk1"
 restore_backup: "20260608_084921"
-
