@@ -13,11 +13,11 @@
       - fio
     state: present
 
-- name: Dat hostname
+- name: Set hostname
   hostname:
     name: "{{ inventory_hostname }}"
 
-- name: Install Java
+- name: Install Java and required tools
   apt:
     name:
       - openjdk-17-jre-headless
@@ -34,43 +34,42 @@
     state: present
     update_cache: yes
 
-- name: Enable and start Chrony
+- name: Enable and start Chrony service
   systemd:
     name: chrony
     enabled: yes
     state: started
 
-- name: Kiem tra chrony
+- name: Check Chrony tracking status
   command: chronyc tracking
   register: chrony_result
 
-- name: Hien thi ket qua chrony
+- name: Display Chrony tracking result
   debug:
     msg: "{{ chrony_result.stdout }}"
 
-- name: Kiem tra source NTP
+- name: Check NTP sources
   command: chronyc sources
   register: sources_result
 
-- name: Hien thi ket qua chrony
+- name: Display Chrony sources result
   debug:
     msg: "{{ sources_result.stdout }}"
 
-- name: Them host
+- name: Add hosts entries
   lineinfile:
     path: /etc/hosts
     line: "{{ hostvars[item]['ansible_host'] }} {{ item }}"
     state: present
   loop: "{{ groups['zookeeper'] }}"
 
-- name: Kiem tra hosts
+- name: Verify hosts resolution
   command: getent hosts {{ item }}
   register: host_result
   loop: "{{ groups['zookeeper'] }}"
   changed_when: false
 
-- name: Hien thi ket qua hosts
+- name: Display hosts resolution result
   debug:
     msg: "{{ item.stdout }}"
   loop: "{{ host_result.results }}"
-
