@@ -1,10 +1,10 @@
 ---
-- name: Create group zookeeper
+- name: Create zookeeper group
   group:
     name: zookeeper
     system: yes
 
-- name: Create user zookeeper
+- name: Create zookeeper user
   user:
     name: zookeeper
     group: zookeeper
@@ -13,7 +13,7 @@
     system: yes
     create_home: no
 
-- name: Create directory
+- name: Create directories
   file:
     path: "{{ item.path }}"
     state: directory
@@ -27,14 +27,14 @@
     - { path: "{{ zookeeper_datalog_dir }}", mode: "0750" }
     - { path: "{{ zookeeper_log_dir }}", mode: "0750" }
 
-- name: Check directory
+- name: Check directories
   command: "ls -ld {{ item }}"
   register: result
   loop:
     - "{{ zookeeper_data_dir }}"
     - "{{ zookeeper_datalog_dir }}"
 
-- name: Show result
+- name: Show check results
   debug:
     msg: "{{ item.stdout }}"
   loop: "{{ result.results }}"
@@ -53,7 +53,7 @@
     group: zookeeper
     creates: "/opt/apache-zookeeper-{{ zookeeper_version }}-bin"
 
-- name: Create symlink current
+- name: Create current symlink
   file:
     src: "/opt/apache-zookeeper-{{ zookeeper_version }}-bin"
     dest: "/opt/zookeeper/current"
@@ -61,7 +61,7 @@
     owner: zookeeper
     group: zookeeper
 
-- name: Create file zoo.cfg
+- name: Create zoo.cfg
   template:
     src: zoo.cfg.j2
     dest: "{{ zookeeper_config_dir }}/zoo.cfg"
@@ -78,7 +78,7 @@
     group: zookeeper
     mode: "0644"
 
-- name: Create file zookeeper-env.sh
+- name: Create zookeeper environment file
   template:
     src: zookeeper-env.sh.j2
     dest: "{{ zookeeper_config_dir }}/zookeeper-env.sh"
@@ -87,11 +87,11 @@
     mode: "0640"
   notify: Restart zookeeper
 
-- name: Check zookeeper-env.sh file
+- name: Check zookeeper environment file
   command: cat {{ zookeeper_config_dir }}/zookeeper-env.sh
   register: env_result
 
-- name: Show result
+- name: Show environment file
   debug:
     msg: "{{ env_result.stdout }}"
 
@@ -101,22 +101,19 @@
     dest: "/etc/systemd/system/zookeeper.service"
 
 - name: Reload systemd
-  systemd: 
+  systemd:
     daemon_reload: yes
 
-- name: Restart zookeeper
-  systemd: 
+- name: Start zookeeper service
+  systemd:
     name: zookeeper
     state: started
     enabled: yes
 
-- name: Check systemd
-  shell: systemctl cat zookeeper
+- name: Check systemd service
+  command: systemctl cat zookeeper
   register: systemd_result
 
-- name: Show result
+- name: Show systemd result
   debug:
     msg: "{{ systemd_result.stdout }}"
-
-
-
