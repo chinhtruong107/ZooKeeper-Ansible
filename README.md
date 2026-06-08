@@ -22,7 +22,8 @@ ZooKeeper-Ansible/
 ├── inventory/
 │   └── inventory.ini                 # EC2 hosts
 ├── group_vars/
-│   └── zookeeper.yml                 # Variables
+│   ├── zookeeper.yml                 # Variables
+│   └── vault.yml                     # Encrypted sensitive variables (Ansible Vault)
 ├── playbooks/
 │   ├── backup.yml
 │   └── restore.yml
@@ -42,9 +43,9 @@ ZooKeeper-Ansible/
 Edit `group_vars/zookeeper.yml`:
 
 ```yaml
-# SSH
-ansible_user: ubuntu
-ansible_ssh_private_key_file: "~/.ssh/your-key.pem"
+# SSH (reference vault variables)
+ansible_user: "{{ vault_ansible_user }}"
+ansible_ssh_private_key_file: "{{ vault_ssh_private_key_file }}"
 
 # ZooKeeper
 zookeeper_version: "3.9.5"
@@ -78,12 +79,43 @@ zk3 ansible_host=<IP_ZK3>
 
 ---
 
+## Ansible Vault
+
+Sensitive variables are encrypted using Ansible Vault.
+
+### Create vault file
+
+```bash
+ansible-vault create group_vars/vault.yml
+```
+
+Content of `vault.yml`:
+
+```yaml
+vault_ansible_user: "ubuntu"
+vault_ssh_private_key_file: "~/.ssh/your-key.pem"
+```
+
+### Edit vault file
+
+```bash
+ansible-vault edit group_vars/vault.yml
+```
+
+### Run playbook with vault
+
+```bash
+ansible-playbook -i inventory/inventory.ini site.yml --ask-vault-pass
+```
+
+---
+
 ## Usage
 
 ### Deploy cluster
 
 ```bash
-ansible-playbook -i inventory/inventory.ini site.yml
+ansible-playbook -i inventory/inventory.ini site.yml --ask-vault-pass
 ```
 
 ### Run backup
