@@ -4,5 +4,6 @@
   become: true
   vars_files:
     - ../group_vars/zookeeper.yml
+    - group_vars/vault.yml
   roles:
     - backup

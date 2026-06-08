@@ -4,6 +4,7 @@
   become: true
   vars_files:
     - group_vars/zookeeper.yml
+    - group_vars/vault.yml
   roles:
     - common
 
@@ -12,6 +13,7 @@
   become: true
   vars_files:
     - group_vars/zookeeper.yml
+    - group_vars/vault.yml
   roles:
     - zookeeper
 
@@ -21,6 +23,7 @@
   serial: 1
   vars_files:
     - group_vars/zookeeper.yml
+    - group_vars/vault.yml
   tasks:
     - name: Start ZooKeeper service
       systemd:
@@ -42,5 +45,6 @@
   become: true
   vars_files:
     - group_vars/zookeeper.yml
+    - group_vars/vault.yml
   roles:
     - verify  
