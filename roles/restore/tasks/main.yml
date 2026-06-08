@@ -78,6 +78,16 @@
     - restore_enabled
     - restore_type == 'full' or inventory_hostname == restore_target
 
+- name: Wait for ZooKeeper to start
+  wait_for:
+    host: 127.0.0.1
+    port: "{{ zookeeper_client_port }}"
+    delay: 5
+    timeout: 60
+  when:
+    - restore_enabled
+    - restore_type == 'full' or inventory_hostname == restore_target
+
 - name: Check Zookeeper health
   shell: echo ruok | nc 127.0.0.1 2181
   register: ruok_result
