@@ -1,0 +1,4 @@
+group_vars/vault.yml
+*.pem
+*.key
+inventory/inventory.ini
